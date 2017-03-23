@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 1995, 2013, Oracle and/or its affiliates. All rights reserved.
  *
@@ -28,88 +27,56 @@
  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+ */ 
 
 import java.io.*;
 import java.net.*;
 
-public class EchoClient implements Runnable {
-	public static int portnum;
-	public Thread runner;
-	
-	public EchoClient(String client) {
-		runner = new Thread(this, client);
-		runner.start();
-	}
-	
-	public void run() {
-		ServerSocket serverSocket = new ServerSocket(portnum);
-		try (
-	            ServerSocket serverSocket2 =
-	                new ServerSocket(portnum);
-	            Socket clientSocket2 = serverSocket2.accept();     
-	            PrintWriter out =
-	                new PrintWriter(clientSocket2.getOutputStream(), true);                   
-	            BufferedReader in = new BufferedReader(
-	                new InputStreamReader(clientSocket2.getInputStream()));
-	        ) {
-	            String inputLine;
-	            while ((inputLine = in.readLine()) != null) {
-	                out.println(inputLine);
-	            }
-		}catch (IOException e,IOException) {
-			System.out.println(
-					"Exception caught when trying to listen on port " + portnum + " or listening for a connection");
-			System.out.println(e.getMessage());
-		}
-	}
-	public static void main(String[] args) throws IOException {
+public class EchoClient {
+    public static void main(String[] args) throws IOException {
+        
+        if (args.length != 2) {
+            System.err.println(
+                "Usage: java EchoClient <host name> <port number>");
+            System.exit(1);
+        }
 
-		if (args.length != 2) {
-			System.err.println("Usage: java EchoClient <host name> <port number> <personal port number>");
-			System.exit(1);
-		}
-		
-		
-		
+        String hostName = args[0];
+        int portNumber = Integer.parseInt(args[1]);
 
-		String hostName = args[0];
-		int portNumber = Integer.parseInt(args[1]);
-		portnum = Integer.parseInt(args[2]);
-		try (Socket echoSocket = new Socket(hostName, portNumber);
-				PrintWriter out = new PrintWriter(echoSocket.getOutputStream(), true);
-				BufferedReader in = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
-				BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in))) {
-			
-		String userInput;
-
-			while ((userInput = stdIn.readLine()) != null) {
-				out.println(userInput);
-				// check if client is asking for list of users if yes then list
-				// otherwise echo what they typed
-
-				if (userInput.equals("" + portnum)){
-					Thread test = new Thread(new EchoClient("message"));
-				}
-				if (userInput.equals("LIST")) {
-					// server returns an array converted to an array.
-					// removed the [] and change the commas to new lines
-					String listOfPlayers = in.readLine();
-					listOfPlayers = listOfPlayers.substring(1, listOfPlayers.length() - 1);
-					listOfPlayers = listOfPlayers.replaceAll(", ", "\n");
-					listOfPlayers = listOfPlayers.replaceAll("=", " has an open port on ");
-					System.out.println(listOfPlayers);
-				} else {
-					System.out.println(in.readLine());
-				}
-			}
-			echoSocket.close();
-		} catch (UnknownHostException e) {
-			System.err.println("Don't know about host " + hostName);
-			System.exit(1);
-		} catch (IOException e) {
-			System.err.println("Couldn't get I/O for the connection to " + hostName);
-			System.exit(1);
-		}
-	}
+        try (
+            Socket echoSocket = new Socket(hostName, portNumber);
+            PrintWriter out =
+                new PrintWriter(echoSocket.getOutputStream(), true);
+            BufferedReader in =
+                new BufferedReader(
+                    new InputStreamReader(echoSocket.getInputStream()));
+            BufferedReader stdIn =
+                new BufferedReader(
+                    new InputStreamReader(System.in))
+        ) {
+            String userInput;
+            while ((userInput = stdIn.readLine()) != null) {
+                out.println(userInput);
+                if(userInput.equals("LIST")){
+                	String listOfPlayers = in.readLine();
+                	listOfPlayers = listOfPlayers.substring(1,listOfPlayers.length() - 1);
+                	listOfPlayers = listOfPlayers.replaceAll(", ","\n");
+                	System.out.println(listOfPlayers);
+                }
+                else{
+                	System.out.println(in.readLine());
+                }
+            }
+            
+            System.out.println("FUCK");
+        } catch (UnknownHostException e) {
+            System.err.println("Don't know about host " + hostName);
+            System.exit(1);
+        } catch (IOException e) {
+            System.err.println("Couldn't get I/O for the connection to " +
+                hostName);
+            System.exit(1);
+        } 
+    }
 }

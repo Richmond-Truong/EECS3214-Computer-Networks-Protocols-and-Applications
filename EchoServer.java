@@ -33,14 +33,13 @@
 import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 //implement Runnable to make threads
 public class EchoServer implements Runnable {
 
 	// create variables for threads socket and the list of users.
 	public Thread runner;
-	private static HashMap<String,Integer> user = new HashMap<String,Integer>();
+	private static ArrayList<String> user = new ArrayList<String>();
 	public static Socket clientSocket;
 
 	// constructor class for EchoServer
@@ -51,11 +50,11 @@ public class EchoServer implements Runnable {
 
 	// join method that adds clients to the server list when they do the join
 	// command
-	public synchronized boolean Join(String name, int port) {
-		if (user.containsKey(name)) {
+	public synchronized boolean Join(String name) {
+		if (user.contains(name)) {
 			return true;
 		} else {
-			user.put(name,port);
+			user.add(name);
 			return false;
 		}
 	}
@@ -75,7 +74,6 @@ public class EchoServer implements Runnable {
 			String inputLine;
 			String name = null;
 			boolean joined = true;
-			int openPort;
 			while ((inputLine = in.readLine()) != null) {
 
 				// if client sends
@@ -84,15 +82,14 @@ public class EchoServer implements Runnable {
 					System.out.println(inputLine);
 					out.println("Please enter your name");
 					inputLine = in.readLine();
-					out.println("Please enter your open port");
-					openPort = Integer.parseInt(in.readLine());
+					
 					// if their name is already in use ask them again
-					while (Join(inputLine , openPort)) {
+					while (Join(inputLine)) {
 						out.println("The name is already in use please enter a different one.");
 						inputLine = in.readLine();
 					}
 					name = inputLine;
-					out.println("Welcome: " + name + " Your port is open on: " + openPort);
+					out.println("Welcome: " + name);
 					// deals with when they lkeave
 				} else if (inputLine.equals("LEAVE") && !joined) {
 					joined = true;
@@ -108,9 +105,7 @@ public class EchoServer implements Runnable {
 
 					System.out.println(user);
 					// when client doesn't use the right commands tell them
-				}else if(inputLine.equals("CONNECT")){ 
-					out.println(user);
-				}else {
+				} else {
 					out.println("Invalid command");
 				}
 
